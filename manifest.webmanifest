@@ -1,0 +1,20 @@
+{
+  "name": "Un piccolo gesto che accarezza la Terra",
+  "short_name": "Gaia Quiz",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#dff7df",
+  "theme_color": "#2e8b57",
+  "icons": [
+    {
+      "src": "icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}

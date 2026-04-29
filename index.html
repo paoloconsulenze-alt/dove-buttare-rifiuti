@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Un piccolo gesto che accarezza la Terra</title>
+<style>
+body{font-family:Arial,sans-serif;background:linear-gradient(#dff7df,#f7fff7);margin:0;padding:20px;text-align:center;color:#234}
+.card{max-width:780px;margin:auto;background:#fff;border-radius:20px;padding:25px;box-shadow:0 4px 15px rgba(0,0,0,.15)}
+h1{font-size:2em;margin-bottom:5px} h2{font-size:1.45em;min-height:60px}
+.buttons{display:grid;grid-template-columns:repeat(2,1fr);gap:14px;margin-top:20px}
+button{padding:14px;border:none;border-radius:12px;font-size:1em;cursor:pointer}
+button:disabled{opacity:.75;cursor:not-allowed}
+.modeBtn,.levelBtn{background:#2e8b57;color:white;margin:8px;min-width:180px}
+.result{margin-top:20px;font-size:1.1em;min-height:70px}
+.next{background:#2e8b57;color:white;margin-top:15px}
+.home{background:#666;color:white;margin-top:20px}
+.bin{font-size:1.05em;font-weight:bold;color:white;min-height:88px;border-radius:18px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;box-shadow:0 4px 10px rgba(0,0,0,.18)}
+.bin .icon{font-size:2em;line-height:1} .bin .label{font-size:.95em}
+.organico{background:#8B5A2B} .plastica{background:#E0B400;color:#222} .carta{background:#3B82F6} .vetro{background:#22C55E} .indiff{background:#444} .speciali{background:#D62828}
+.small{font-size:.95em;color:#456}
+input{width:90%;max-width:440px;padding:12px;border-radius:10px;border:1px solid #bbb;font-size:1em}
+.searchItem{padding:10px;border-bottom:1px solid #ddd;text-align:left}
+.journeyBox{margin-top:16px;padding:18px;border-radius:18px;background:#f2fff2;box-shadow:inset 0 0 0 1px #cfe8cf}.journeyEmoji{font-size:3em;margin:5px}.journeyOptions{display:grid;grid-template-columns:1fr;gap:10px;margin-top:15px}.journeyBtn{background:#2e8b57;color:white}.journeyResult{margin-top:18px;padding:15px;border-radius:14px;font-size:1.05em;line-height:1.45}.journeyOk{background:#e7f7ec}.journeyNo{background:#fff0e6}.journeyNote{font-size:.95em;color:#456;margin-top:10px}
+@media(max-width:600px){.buttons{grid-template-columns:1fr}h1{font-size:1.55em}.card{padding:18px}}
+</style>
+</head>
+<body>
+<div class="card" id="app">
+<div id="homeHeader">
+<h1>🌍 Un piccolo gesto che accarezza la Terra</h1>
+<p>Impara giocando dove mettere ogni rifiuto.</p>
+<p class="small">Ogni scelta corretta aiuta la Terra: meno errori, più riciclo, più cura.</p>
+</div>
+<div id="modeSelect">
+<p><b>Scegli cosa fare:</b></p>
+<button class="modeBtn" onclick="showQuiz()">🎮 Inizia il quiz</button>
+<button class="modeBtn" onclick="showSearch()">🔎 Cerca un rifiuto</button>
+<button class="modeBtn" onclick="showJourney()">🚛 Il viaggio dei rifiuti</button>
+</div>
+<div id="levelSelect" style="display:none;">
+<p><b>Scegli il livello:</b></p>
+<button class="levelBtn" onclick="setLevel('facile')">🟢 Facile<br><small>8 domande</small></button>
+<button class="levelBtn" onclick="setLevel('medio')">🟡 Medio<br><small>10 domande</small></button>
+<button class="levelBtn" onclick="setLevel('difficile')">🔴 Difficile<br><small>15 domande</small></button>
+<button class="levelBtn" onclick="setLevel('misto')">🌍 Misto<br><small>12 domande</small></button>
+</div>
+<div id="searchArea" style="display:none;">
+<p><b>Cerca un rifiuto</b></p>
+<input id="searchInput" type="text" placeholder="Es. scontrino, pila, giocattoli..." oninput="searchWaste()">
+<div id="searchResults" class="result"></div>
+<button class="home" onclick="goHome()">🏠 Torna all’inizio</button>
+</div>
+<div id="journeyArea" style="display:none;">
+<p><b>🚛 Il viaggio dei rifiuti</b></p>
+<p class="small">Scopri che cosa può diventare un rifiuto quando viene raccolto nel modo giusto.</p>
+<div id="journeyCard" class="journeyBox"></div>
+<button class="next" id="journeyNextBtn" onclick="nextJourney()" style="display:none;">Successivo</button>
+<br>
+<button class="home" onclick="goHome()">🏠 Torna all’inizio</button>
+</div>
+<div id="quizArea" style="display:none;">
+<p id="score">Punteggio: 0</p>
+<h2 id="question"></h2>
+<div class="buttons" id="buttons"></div>
+<div class="result" id="result"></div>
+<button class="next" id="nextBtn" onclick="nextQuestion()" style="display:none;">Prossimo</button>
+</div>
+</div>
+<script>
+const items = [{"n": "🍎 Scarti di frutta e verdura", "c": "Organico", "d": "facile", "k": "scarti frutta verdura bucce avanzi", "e": "Avanzi di cibo e bucce vanno nell’organico."}, {"n": "☕ Fondi di caffè", "c": "Organico", "d": "facile", "k": "fondi caffe caffè moka", "e": "Diventano compost."}, {"n": "🥚 Gusci d’uovo", "c": "Organico", "d": "facile", "k": "gusci uovo uova", "e": "Sono adatti all’organico."}, {"n": "🍾 Bottiglia di vetro", "c": "Vetro", "d": "facile", "k": "bottiglia vetro", "e": "Le bottiglie vanno negli imballaggi in vetro."}, {"n": "📰 Giornale", "c": "Carta", "d": "facile", "k": "giornale quotidiano rivista carta", "e": "Carta stampata: carta e cartone."}, {"n": "📦 Scatola di cartone", "c": "Carta", "d": "facile", "k": "scatola cartone scatolone pacco", "e": "Cartoni e scatoloni vanno in carta e cartone."}, {"n": "🥫 Lattina", "c": "Plastica", "d": "facile", "k": "lattina barattolo metallo alluminio", "e": "Nel territorio GAIA le lattine si raccolgono con plastica e lattine."}, {"n": "🧴 Flacone shampoo vuoto", "c": "Plastica", "d": "facile", "k": "shampoo sciampo flacone detergente capelli", "e": "Il flacone vuoto dello shampoo va nel multimateriale."}, {"n": "🥫 Barattolo di vetro", "c": "Vetro", "d": "facile", "k": "barattolo vaso vasetto vetro conserva marmellata", "e": "È un imballaggio in vetro."}, {"n": "🍨 Vaschetta gelato vuota", "c": "Plastica", "d": "facile", "k": "vaschetta gelato plastica", "e": "Se svuotata va nella plastica."}, {"n": "🧴 Flacone detersivo vuoto", "c": "Plastica", "d": "facile", "k": "flacone detersivo detergente pulizie", "e": "I flaconi vuoti vanno nel multimateriale."}, {"n": "🥤 Bottiglia di plastica vuota", "c": "Plastica", "d": "facile", "k": "bottiglia plastica acqua bibita", "e": "Le bottiglie vuote vanno nel multimateriale."}, {"n": "🍞 Sacchetto del pane pulito", "c": "Carta", "d": "facile", "k": "sacchetto pane carta pulito", "e": "Se è di carta pulita va in carta e cartone."}, {"n": "🧅 Bucce di cipolla", "c": "Organico", "d": "facile", "k": "bucce cipolla scarti cucina", "e": "Sono scarti alimentari."}, {"n": "🍌 Buccia di banana", "c": "Organico", "d": "facile", "k": "banana buccia frutta", "e": "È uno scarto organico."}, {"n": "🧴 Flacone bagnoschiuma vuoto", "c": "Plastica", "d": "facile", "k": "bagnoschiuma bagno doccia flacone", "e": "Se vuoto va nel multimateriale."}, {"n": "🔵 Tappo di plastica", "c": "Plastica", "d": "facile", "k": "tappo plastica", "e": "Va nel multimateriale."}, {"n": "🥣 Vasetto yogurt", "c": "Plastica", "d": "facile", "k": "vasetto yogurt", "e": "Va nel multimateriale."}, {"n": "🍾 Bottiglia olio", "c": "Vetro", "d": "facile", "k": "bottiglia olio vetro", "e": "Va nel vetro."}, {"n": "🌿 Sfalci d’erba", "c": "Organico", "d": "facile", "k": "sfalci erba prato giardino", "e": "Gli sfalci vanno nell’organico o in ecostazione."}, {"n": "🧾 Scontrino", "c": "Indifferenziato", "d": "medio", "k": "scontrino ricevuta fiscale carta termica", "e": "Lo scontrino non va nella carta."}, {"n": "📄 Carta forno", "c": "Indifferenziato", "d": "medio", "k": "carta forno cucina", "e": "Nel libretto GAIA è indicata come RU."}, {"n": "🍕 Cartone pizza non unto", "c": "Carta", "d": "medio", "k": "cartone pizza pulito non unto", "e": "Se non unto va in carta e cartone."}, {"n": "🧻 Tovagliolo sporco", "c": "Indifferenziato", "d": "medio", "k": "tovagliolo sporco fazzoletto sporco carta sporca", "e": "Nel dubbio, i materiali sporchi non recuperabili vanno nel RU."}, {"n": "✨ Carta stagnola", "c": "Plastica", "d": "medio", "k": "carta stagnola alluminio foglio alluminio", "e": "GAIA la indica in plastica e lattine."}, {"n": "🪥 Spazzolino da denti", "c": "Indifferenziato", "d": "medio", "k": "spazzolino denti", "e": "Non è un imballaggio: va nel RU."}, {"n": "💊 Medicinali scaduti", "c": "Speciali", "d": "medio", "k": "medicinali farmaci medicine scaduti", "e": "Vanno in farmacia o nelle ecostazioni."}, {"n": "🗝️ Tappi a corona", "c": "Plastica", "d": "medio", "k": "tappi corona tappo birra metallo", "e": "GAIA li indica in plastica e lattine."}, {"n": "🍽️ Piatto di ceramica", "c": "Indifferenziato", "d": "medio", "k": "piatto ceramica stoviglia porcellana", "e": "Non va nel vetro né nella carta."}, {"n": "☕ Cialda compostabile", "c": "Organico", "d": "medio", "k": "cialda caffe compostabile caffè", "e": "Se certificata compostabile."}, {"n": "🥪 Pellicola alimentare", "c": "Plastica", "d": "medio", "k": "pellicola alimentare cucina plastica", "e": "GAIA la raccoglie con plastica e lattine."}, {"n": "🥛 Cartone del latte", "c": "Carta", "d": "medio", "k": "cartone latte tetrapak tetra pak bevande", "e": "Tipo Tetra Pak: carta e cartone."}, {"n": "🥫 Scatoletta tonno", "c": "Plastica", "d": "medio", "k": "scatoletta tonno metallo lattina", "e": "Metallo nel multimateriale."}, {"n": "🧽 Spugna da cucina", "c": "Indifferenziato", "d": "medio", "k": "spugna cucina", "e": "Non è un imballaggio riciclabile."}, {"n": "🧴 Tubetto dentifricio vuoto", "c": "Plastica", "d": "medio", "k": "dentifricio tubetto vuoto", "e": "Se vuoto va nel multimateriale."}, {"n": "🧻 Rotolo interno carta igienica", "c": "Carta", "d": "medio", "k": "rotolo carta igienica anima cartoncino", "e": "È cartoncino pulito."}, {"n": "🪒 Rasoio usa e getta", "c": "Indifferenziato", "d": "medio", "k": "rasoio lametta barba usa getta", "e": "Non è un imballaggio."}, {"n": "✒️ Penna biro", "c": "Indifferenziato", "d": "medio", "k": "penna biro penne evidenziatore matita", "e": "Non è un imballaggio in plastica."}, {"n": "📀 CD o DVD", "c": "Indifferenziato", "d": "medio", "k": "cd dvd disco", "e": "Non va nella plastica da imballaggio."}, {"n": "🪥 Spazzola capelli", "c": "Indifferenziato", "d": "medio", "k": "spazzola capelli pettine", "e": "Non è un imballaggio."}, {"n": "🩹 Cerotto", "c": "Indifferenziato", "d": "medio", "k": "cerotto garza medicazione", "e": "Rifiuto sanitario domestico."}, {"n": "🧻 Cotton fioc", "c": "Indifferenziato", "d": "medio", "k": "cotton fioc bastoncini orecchie", "e": "Non riciclabile."}, {"n": "🧻 Dischetti struccanti", "c": "Indifferenziato", "d": "medio", "k": "dischetti struccanti cotone trucco", "e": "Se sporchi vanno nel RU."}, {"n": "🧤 Guanti di gomma", "c": "Indifferenziato", "d": "medio", "k": "guanti gomma lattice cucina pulizie", "e": "Non sono imballaggi: vanno nell’indifferenziato."}, {"n": "🧹 Scopa rotta", "c": "Indifferenziato", "d": "medio", "k": "scopa rotta manico pulizie", "e": "Se di piccole dimensioni va nel RU; se ingombrante meglio ecostazione."}, {"n": "🪣 Secchio rotto", "c": "Indifferenziato", "d": "medio", "k": "secchio bacinella catino plastica dura", "e": "Non è un imballaggio: va nel RU o in ecostazione se grande."}, {"n": "🧼 Sapone solido", "c": "Indifferenziato", "d": "medio", "k": "sapone saponetta residuo bagno", "e": "Il residuo non è un imballaggio."}, {"n": "📦 Imballaggio in polistirolo", "c": "Plastica", "d": "medio", "k": "polistirolo imballaggio vaschetta polistirolo", "e": "Il polistirolo da imballaggio va nel multimateriale."}, {"n": "🧽 Straccio sporco", "c": "Indifferenziato", "d": "medio", "k": "straccio panno sporco pulizie", "e": "Se non recuperabile va nel RU."}, {"n": "🔋 Pila scarica", "c": "Speciali", "d": "medio", "k": "pila pile batteria batterie scariche", "e": "Va nei contenitori dedicati o in ecostazione."}, {"n": "🕯️ Candela consumata", "c": "Indifferenziato", "d": "medio", "k": "candela cera lumino", "e": "La cera residua va nel RU."}, {"n": "🧻 Carta assorbente sporca", "c": "Indifferenziato", "d": "medio", "k": "carta assorbente sporca scottex cucina", "e": "Se sporca e non recuperabile va nel RU."}, {"n": "🖱️ Mouse", "c": "Speciali", "d": "medio", "k": "mouse pc computer", "e": "È un piccolo RAEE."}, {"n": "⌨️ Tastiera", "c": "Speciali", "d": "medio", "k": "tastiera pc computer", "e": "È un piccolo RAEE."}, {"n": "🔌 Caricabatterie", "c": "Speciali", "d": "medio", "k": "caricabatterie alimentatore", "e": "È un piccolo RAEE."}, {"n": "🔌 Cavo USB", "c": "Speciali", "d": "medio", "k": "cavo usb filo caricatore", "e": "Va tra i RAEE o in ecostazione."}, {"n": "🎧 Cuffie", "c": "Speciali", "d": "medio", "k": "cuffie auricolari", "e": "Sono RAEE."}, {"n": "📺 Telecomando", "c": "Speciali", "d": "medio", "k": "telecomando tv", "e": "È un RAEE."}, {"n": "🧮 Calcolatrice", "c": "Speciali", "d": "medio", "k": "calcolatrice", "e": "È un piccolo RAEE."}, {"n": "🌳 Potature", "c": "Organico", "d": "medio", "k": "potature rami foglie giardino", "e": "Le potature vanno in ecostazione o nel verde."}, {"n": "🪴 Terriccio", "c": "Indifferenziato", "d": "medio", "k": "terriccio terra vaso", "e": "Piccole quantità nel RU; grandi quantità in ecostazione."}, {"n": "🪴 Vaso di plastica", "c": "Indifferenziato", "d": "medio", "k": "vaso plastica pianta", "e": "Non è un imballaggio."}, {"n": "🏺 Vaso in terracotta", "c": "Indifferenziato", "d": "medio", "k": "vaso terracotta coccio", "e": "Non va nel vetro."}, {"n": "🐱 Lettiera gatto", "c": "Indifferenziato", "d": "medio", "k": "lettiera gatto sabbia animali", "e": "Va nell’indifferenziato."}, {"n": "🐶 Deiezioni animali", "c": "Indifferenziato", "d": "medio", "k": "deiezioni animali cane gatto", "e": "Vanno nel RU."}, {"n": "🌾 Sacco mangime", "c": "Carta", "d": "medio", "k": "sacco mangime carta", "e": "Se in carta pulita va in carta."}, {"n": "🍽️ Teglia di alluminio", "c": "Plastica", "d": "medio", "k": "teglia alluminio vaschetta alluminio", "e": "Se pulita va nel multimateriale."}, {"n": "🥤 Bicchiere di plastica", "c": "Plastica", "d": "medio", "k": "bicchiere plastica", "e": "Se pulito va nel multimateriale."}, {"n": "🥤 Bicchiere di carta", "c": "Carta", "d": "medio", "k": "bicchiere carta", "e": "Se pulito va nella carta."}, {"n": "🥤 Cannuccia", "c": "Indifferenziato", "d": "medio", "k": "cannuccia", "e": "Di solito va nel RU."}, {"n": "⚙️ Tappo di metallo", "c": "Plastica", "d": "medio", "k": "tappo metallo", "e": "Va nel multimateriale."}, {"n": "🥓 Confezione affettati", "c": "Plastica", "d": "medio", "k": "confezione affettati vaschetta salumi", "e": "Va nel multimateriale."}, {"n": "❄️ Sacchetto surgelati", "c": "Plastica", "d": "medio", "k": "sacchetto surgelati", "e": "Va nel multimateriale se pulito."}, {"n": "🧦 Calze usate", "c": "Speciali", "d": "medio", "k": "calze calzini usati", "e": "Se riutilizzabili nei contenitori abiti usati."}, {"n": "👖 Pantaloni usati", "c": "Speciali", "d": "medio", "k": "pantaloni jeans usati", "e": "Se riutilizzabili nei contenitori abiti usati."}, {"n": "👕 Maglietta usata", "c": "Speciali", "d": "medio", "k": "maglietta tshirt usata", "e": "Se riutilizzabile nei contenitori abiti usati."}, {"n": "🧥 Giacca usata", "c": "Speciali", "d": "medio", "k": "giacca cappotto usato", "e": "Se riutilizzabile nei contenitori abiti usati."}, {"n": "👜 Borsa usata", "c": "Speciali", "d": "medio", "k": "borsa zaino borsetta usata", "e": "Se riutilizzabile nei contenitori abiti usati."}, {"n": "🎒 Zaino usato", "c": "Speciali", "d": "medio", "k": "zaino cartella usata", "e": "Se riutilizzabile nei contenitori abiti usati."}, {"n": "🛏️ Lenzuola usate", "c": "Speciali", "d": "medio", "k": "lenzuola usate", "e": "Se riutilizzabili nei contenitori tessili."}, {"n": "🛌 Coperte usate", "c": "Speciali", "d": "medio", "k": "coperte plaid usati", "e": "Se riutilizzabili nei contenitori tessili."}, {"n": "🛁 Asciugamani usati", "c": "Speciali", "d": "medio", "k": "asciugamani usati", "e": "Se riutilizzabili nei contenitori tessili."}, {"n": "🪟 Tende usate", "c": "Speciali", "d": "medio", "k": "tende usate", "e": "Se riutilizzabili nei contenitori tessili."}, {"n": "🌿 Sacchetto compostabile certificato", "c": "Organico", "d": "medio", "k": "sacchetto compostabile ok compost cic en13432", "e": "Va nell’organico se certificato compostabile."}, {"n": "☕ Capsula compostabile certificata", "c": "Organico", "d": "medio", "k": "capsula compostabile certificata caffe caffè", "e": "Va nell’organico se certificata."}, {"n": "📱 Cellulare", "c": "Speciali", "d": "difficile", "k": "cellulare smartphone telefonino telefono", "e": "È un RAEE."}, {"n": "💾 Chiavetta USB", "c": "Speciali", "d": "difficile", "k": "chiavetta usb memoria pen drive pendrive", "e": "Va nei RAEE."}, {"n": "🍷 Bicchiere di cristallo", "c": "Indifferenziato", "d": "difficile", "k": "bicchiere cristallo vetro rotto", "e": "Non va nel vetro: GAIA lo indica come RU."}, {"n": "💄 Cosmetici", "c": "Indifferenziato", "d": "difficile", "k": "cosmetici trucco rossetto mascara", "e": "GAIA li indica come RU."}, {"n": "🍼 Pannolino", "c": "Indifferenziato", "d": "difficile", "k": "pannolino pannolini assorbente assorbenti", "e": "GAIA lo indica come RU."}, {"n": "🫒 Olio vegetale usato", "c": "Speciali", "d": "difficile", "k": "olio vegetale cucina frittura usato", "e": "Va conferito in ecostazione o raccolta oli."}, {"n": "🍾 Tappo di sughero", "c": "Organico", "d": "difficile", "k": "tappo sughero tappi sughero", "e": "GAIA lo indica nell’organico."}, {"n": "🔦 Torcia", "c": "Speciali", "d": "difficile", "k": "torcia pila lampada portatile", "e": "Le lampade portatili sono RAEE."}, {"n": "📼 Videocassetta", "c": "Indifferenziato", "d": "difficile", "k": "videocassetta vhs cassetta video", "e": "GAIA la indica come RU."}, {"n": "🧃 Contenitore Tetra Pak", "c": "Carta", "d": "difficile", "k": "tetra pak tetrapak brik brick succo latte", "e": "I contenitori per bevande vanno in carta e cartone."}, {"n": "☕ Capsula caffè plastica", "c": "Indifferenziato", "d": "difficile", "k": "capsula caffe plastica caffè", "e": "Se non ha raccolta dedicata va nel RU."}, {"n": "🍳 Padella vecchia", "c": "Speciali", "d": "difficile", "k": "padella pentola metallo", "e": "Meglio ecostazione / metalli."}, {"n": "💡 Lampadina LED", "c": "Speciali", "d": "difficile", "k": "lampadina led basso consumo raee", "e": "È un RAEE."}, {"n": "💡 Lampadina a incandescenza", "c": "Indifferenziato", "d": "difficile", "k": "lampadina incandescenza vecchia", "e": "Non è RAEE come le lampadine a basso consumo."}, {"n": "🪞 Specchio rotto", "c": "Indifferenziato", "d": "difficile", "k": "specchio rotto", "e": "Non va nel vetro degli imballaggi."}, {"n": "🎮 Giocattolo elettronico", "c": "Speciali", "d": "difficile", "k": "giocattolo elettronico giocattoli elettronici gioco elettrico", "e": "Se contiene parti elettriche è RAEE."}, {"n": "🧸 Giocattolo non elettronico", "c": "Indifferenziato", "d": "difficile", "k": "giocattolo giocattoli bambola pupazzo gioco plastica", "e": "Non è un imballaggio."}, {"n": "🖨️ Cartuccia stampante", "c": "Speciali", "d": "difficile", "k": "cartuccia stampante toner inchiostro", "e": "Va raccolta separatamente."}, {"n": "👟 Scarpe usate", "c": "Speciali", "d": "difficile", "k": "scarpe usate calzature", "e": "Meglio raccolta abiti usati/ecostazione se non riutilizzabili."}, {"n": "💊 Blister medicine vuoto", "c": "Indifferenziato", "d": "difficile", "k": "blister medicine farmaci vuoto pastiglie", "e": "GAIA lo indica come RU."}, {"n": "🧴 Deodorante spray vuoto", "c": "Plastica", "d": "difficile", "k": "deodorante spray bomboletta vuota", "e": "Se vuoto va nel multimateriale."}, {"n": "🪟 Vetro da finestra rotto", "c": "Indifferenziato", "d": "difficile", "k": "vetro finestra lastra vetro rotto", "e": "Non va con gli imballaggi in vetro."}, {"n": "🧯 Vernice avanzata", "c": "Speciali", "d": "difficile", "k": "vernice pittura solvente barattolo pieno", "e": "È un rifiuto da conferire in ecostazione."}, {"n": "🧺 Cesto in plastica rotto", "c": "Indifferenziato", "d": "difficile", "k": "cesto cestino plastica rotto contenitore", "e": "Non è un imballaggio: se grande, ecostazione."}, {"n": "📡 Modem / Router", "c": "Speciali", "d": "difficile", "k": "modem router wifi internet", "e": "È un RAEE."}, {"n": "🖨️ Stampante", "c": "Speciali", "d": "difficile", "k": "stampante", "e": "È un RAEE."}, {"n": "🖥️ Monitor", "c": "Speciali", "d": "difficile", "k": "monitor schermo computer", "e": "È un RAEE."}, {"n": "💽 Hard disk", "c": "Speciali", "d": "difficile", "k": "hard disk disco memoria", "e": "È un RAEE."}, {"n": "💻 Notebook", "c": "Speciali", "d": "difficile", "k": "notebook portatile laptop computer", "e": "È un RAEE."}, {"n": "🕸️ Rete antigrandine", "c": "Speciali", "d": "difficile", "k": "rete antigrandine telo agricolo rete giardino", "e": "Meglio conferire in ecostazione."}, {"n": "🛡️ Telo agricolo", "c": "Speciali", "d": "difficile", "k": "telo agricolo plastica agricola", "e": "Meglio conferire in ecostazione."}, {"n": "🍴 Posate biodegradabili non certificate", "c": "Indifferenziato", "d": "difficile", "k": "posate biodegradabili bio non certificate", "e": "Se non certificate, meglio nell’indifferenziato."}];
+const categories = [{"label": "Organico", "value": "Organico", "cls": "organico"}, {"label": "Plastica (multimateriale)", "value": "Plastica", "cls": "plastica"}, {"label": "Carta e cartone", "value": "Carta", "cls": "carta"}, {"label": "Vetro", "value": "Vetro", "cls": "vetro"}, {"label": "Indifferenziato", "value": "Indifferenziato", "cls": "indiff"}, {"label": "Speciali / Ecostazione", "value": "Speciali", "cls": "speciali"}];
+const bonusQuestions = [{"q": "Cosa si ottiene dall’umido raccolto correttamente?", "a": ["Solo cenere", "Compost e biometano", "Plastica nuova", "Carta riciclata"], "c": 1, "e": "Dall’umido si ottengono compost e biometano.", "d": "facile"}, {"q": "Perché fare bene la differenziata?", "a": ["Per avere più rifiuti", "Per risparmiare materie prime ed energia", "Per sporcare meno casa", "Per riempire i bidoni"], "c": 1, "e": "Si risparmiano energia e materie prime.", "d": "facile"}, {"q": "Dove vanno le pile scariche?", "a": ["Carta", "Organico", "Contenitori dedicati / ecostazione", "Vetro"], "c": 2, "e": "Le pile vanno raccolte separatamente.", "d": "facile"}, {"q": "Perché lo scontrino non va nella carta?", "a": ["È sporco", "È carta termica", "È troppo piccolo", "È plastificato"], "c": 1, "e": "Lo scontrino è carta termica.", "d": "medio"}, {"q": "Dove può finire l’olio da cucina usato?", "a": ["Nel lavandino", "Nell’organico", "In ecostazione / raccolta oli", "Nel vetro"], "c": 2, "e": "L’olio va raccolto a parte.", "d": "medio"}, {"q": "Cosa succede se sbagliamo la raccolta del vetro?", "a": ["Nulla", "Si rovina il riciclo", "Diventa plastica", "Si scioglie male"], "c": 1, "e": "Il vetro sbagliato può compromettere il riciclo.", "d": "medio"}, {"q": "Dove vanno i piccoli elettrodomestici?", "a": ["Carta", "Vetro", "RAEE / Ecostazione", "Organico"], "c": 2, "e": "I piccoli elettrodomestici sono RAEE.", "d": "difficile"}, {"q": "Quando una bioplastica può andare nell’organico?", "a": ["Sempre", "Solo se ha marchio compostabile", "Mai", "Se è verde"], "c": 1, "e": "Solo se certificata compostabile.", "d": "difficile"}, {"q": "Cosa produce GAIA dall’umido?", "a": ["Solo fumo", "Compost e biometano", "Plastica", "Vetro"], "c": 1, "e": "GAIA produce compost e biometano.", "d": "difficile"}];
+
+const journeyItems = [
+  {emoji:"🍎", title:"Scarti alimentari", q:"Che cosa possono diventare gli scarti dell’organico?", a:["Compost e biometano", "Vetro nuovo", "Carta riciclata"], c:0, e:"L’organico raccolto correttamente può diventare compost per il terreno e biometano: da uno scarto nasce nuova utilità."},
+  {emoji:"🥤", title:"Bottiglia di plastica", q:"Che viaggio fa una bottiglia di plastica conferita bene?", a:["Viene selezionata e inviata al riciclo", "Diventa compost", "Va sempre in discarica"], c:0, e:"La plastica da imballaggio viene selezionata e avviata a impianti che la trasformano in nuova materia prima."},
+  {emoji:"🍾", title:"Bottiglia di vetro", q:"Che cosa può diventare il vetro raccolto correttamente?", a:["Nuovo vetro", "Tessuto", "Biogas"], c:0, e:"Il vetro è prezioso perché può tornare vetro molte volte, se non viene mescolato con materiali sbagliati."},
+  {emoji:"📦", title:"Carta e cartone", q:"Che fine fanno carta e cartone puliti?", a:["Nuova carta e nuovi imballaggi", "Metallo", "Terriccio"], c:0, e:"Carta e cartone puliti rientrano nel ciclo produttivo e possono diventare nuovi fogli, scatole e imballaggi."},
+  {emoji:"🥫", title:"Lattine e metalli", q:"Perché è importante raccogliere bene lattine e metalli?", a:["Per recuperare materiale e ridurre nuove estrazioni", "Per produrre compost", "Per fare vetro"], c:0, e:"I metalli recuperati possono tornare materia utile, evitando sprechi di energia e di risorse naturali."},
+  {emoji:"🔋", title:"Pile scariche", q:"Perché le pile non vanno nei rifiuti comuni?", a:["Perché contengono sostanze da trattare separatamente", "Perché diventano carta", "Perché sono organiche"], c:0, e:"Le pile devono seguire un percorso dedicato: così si evitano dispersioni dannose e si recuperano materiali importanti."},
+  {emoji:"💡", title:"Piccoli RAEE", q:"Che cosa succede a piccoli apparecchi elettrici ed elettronici?", a:["Vanno raccolti separatamente come RAEE", "Vanno nell’organico", "Vanno sempre nel vetro"], c:0, e:"I RAEE contengono componenti recuperabili ma anche parti delicate: per questo devono essere portati nei canali corretti."},
+  {emoji:"🫒", title:"Olio da cucina usato", q:"Qual è il destino corretto dell’olio da cucina usato?", a:["Raccolta oli o ecostazione", "Lavandino", "Carta e cartone"], c:0, e:"L’olio usato non va nel lavandino: raccolto a parte può essere trattato e recuperato, evitando danni all’ambiente."}
+];
+let journeyIndex = 0;
+
+function setHomeHeaderVisible(visible){
+  const header=document.getElementById('homeHeader');
+  if(header) header.style.display=visible?'block':'none';
+}
+function showJourney(){
+  setHomeHeaderVisible(false);
+  document.getElementById('modeSelect').style.display='none';
+  document.getElementById('levelSelect').style.display='none';
+  document.getElementById('searchArea').style.display='none';
+  document.getElementById('quizArea').style.display='none';
+  document.getElementById('journeyArea').style.display='block';
+  journeyIndex=0;
+  renderJourney();
+}
+function renderJourney(){
+  const item=journeyItems[journeyIndex];
+  const card=document.getElementById('journeyCard');
+  document.getElementById('journeyNextBtn').style.display='none';
+  const answers=shuffle(item.a.map((text,idx)=>({text:text,correct:idx===item.c})));
+  card.innerHTML='<div class="journeyEmoji">'+item.emoji+'</div><h2 style="min-height:auto;">'+item.title+'</h2><p><b>'+item.q+'</b></p><div class="journeyOptions">'+answers.map((ans)=>'<button class="journeyBtn" onclick="checkJourney('+(ans.correct?'true':'false')+')">'+ans.text+'</button>').join('')+'</div><div id="journeyResult"></div><p class="journeyNote">Un rifiuto conferito bene non finisce semplicemente “via”: continua il suo viaggio.</p>';
+  window.currentJourneyItem=item;
+}
+function checkJourney(isCorrect){
+  const item=window.currentJourneyItem;
+  const result=document.getElementById('journeyResult');
+  document.querySelector('.journeyOptions').innerHTML='';
+  result.className='journeyResult '+(isCorrect?'journeyOk':'journeyNo');
+  result.innerHTML=(isCorrect?'✅ Esatto!':'🙂 Quasi!')+'<br>'+item.e;
+  document.getElementById('journeyNextBtn').style.display='inline-block';
+}
+function nextJourney(){
+  journeyIndex++;
+  if(journeyIndex>=journeyItems.length){
+    document.getElementById('journeyCard').innerHTML='<div class="journeyEmoji">🌍</div><h2 style="min-height:auto;">Viaggio completato!</h2><p>Hai seguito il percorso dei rifiuti più importanti.</p><p><b>La differenziata funziona meglio quando ogni gesto è fatto con attenzione.</b></p>';
+    document.getElementById('journeyNextBtn').style.display='none';
+  } else renderJourney();
+}
+
+let current=0, score=0, quiz=[], level='misto';
+
+function shuffle(array){
+  const a=[...array];
+  for(let i=a.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [a[i],a[j]]=[a[j],a[i]]; }
+  return a;
+}
+function showQuiz(){
+  setHomeHeaderVisible(false);
+  document.getElementById('modeSelect').style.display='none';
+  document.getElementById('searchArea').style.display='none';
+  document.getElementById('journeyArea').style.display='none';
+  document.getElementById('levelSelect').style.display='block';
+}
+function showSearch(){
+  setHomeHeaderVisible(false);
+  document.getElementById('modeSelect').style.display='none';
+  document.getElementById('levelSelect').style.display='none';
+  document.getElementById('quizArea').style.display='none';
+  document.getElementById('journeyArea').style.display='none';
+  document.getElementById('searchArea').style.display='block';
+  setTimeout(()=>document.getElementById('searchInput').focus(),50);
+}
+function goHome(){ window.location.reload(); }
+function setLevel(selectedLevel){
+  setHomeHeaderVisible(false);
+  level=selectedLevel;
+  document.getElementById('levelSelect').style.display='none';
+  document.getElementById('quizArea').style.display='block';
+  start();
+}
+function start(){
+  current=0; score=0;
+  document.getElementById('score').textContent='Punteggio: 0';
+  let filtered=items;
+  if(level==='facile') filtered=items.filter(x=>x.d==='facile');
+  if(level==='medio') filtered=items.filter(x=>x.d==='medio');
+  if(level==='difficile') filtered=items.filter(x=>x.d==='difficile');
+  let num=10;
+  if(level==='facile') num=8;
+  if(level==='medio') num=10;
+  if(level==='difficile') num=15;
+  if(level==='misto') num=12;
+  quiz=shuffle(filtered).slice(0, Math.min(num, filtered.length));
+  showQuestion();
+}
+function showQuestion(){
+  document.getElementById('result').innerHTML='';
+  document.getElementById('nextBtn').style.display='none';
+  const q=quiz[current];
+  document.getElementById('question').textContent='Dove butto: '+q.n+'?';
+  const container=document.getElementById('buttons');
+  container.innerHTML='';
+  shuffle(categories).forEach(cat=>{
+    const btn=document.createElement('button');
+    btn.innerHTML='<span class="icon">🗑️</span><span class="label">'+cat.label+'</span>';
+    btn.classList.add('bin',cat.cls);
+    btn.onclick=()=>check(cat.value);
+    container.appendChild(btn);
+  });
+}
+function check(answer){
+  const q=quiz[current];
+  const ok=answer===q.c;
+  if(ok) score++;
+  document.getElementById('score').textContent='Punteggio: '+score;
+  document.getElementById('result').innerHTML=(ok?'✅ Giusto! ':'❌ No! ')+q.e+'<br><b>Risposta corretta: '+labelFor(q.c)+'</b>';
+  // Dopo la risposta nasconde i bidoni, così sul telefono resta chiaro l'esito.
+  document.getElementById('buttons').innerHTML='';
+  document.getElementById('nextBtn').style.display='inline-block';
+}
+function labelFor(value){
+  const c=categories.find(x=>x.value===value);
+  return c ? c.label : value;
+}
+function nextQuestion(){
+  current++;
+  if(current>=quiz.length) showBonus(); else showQuestion();
+}
+function showBonus(){
+  let filtered=bonusQuestions;
+  if(level==='facile') filtered=bonusQuestions.filter(q=>q.d==='facile');
+  if(level==='medio') filtered=bonusQuestions.filter(q=>q.d==='facile'||q.d==='medio');
+  const picked=shuffle(filtered).slice(0,Math.min(3,filtered.length));
+  window.bonusSet=picked.map(q=>{
+    const answers=q.a.map((text,idx)=>({text:text,correct:idx===q.c}));
+    return {q:q.q,answers:shuffle(answers),e:q.e};
+  });
+  window.bonusIndex=0;
+  renderBonusQuestion();
+}
+function renderBonusQuestion(){
+  const b=window.bonusSet[window.bonusIndex];
+  let html='<h1>🎁 Domande finali</h1><p><b>Domanda '+(window.bonusIndex+1)+' di '+window.bonusSet.length+'</b></p><p><b>'+b.q+'</b></p>';
+  b.answers.forEach((ans,i)=>{ html+='<button class="modeBtn" style="display:block;margin:10px auto;" onclick="checkBonus('+i+')">'+ans.text+'</button>'; });
+  document.querySelector('.card').innerHTML=html;
+}
+function checkBonus(i){
+  const b=window.bonusSet[window.bonusIndex];
+  const ok=b.answers[i].correct;
+  let html='<h1>'+(ok?'🌱 Corretto!':'🙂 Quasi!')+'</h1><p>'+(ok?'✅ Risposta corretta!':'❌ '+b.e)+'</p>';
+  window.bonusIndex++;
+  if(window.bonusIndex<window.bonusSet.length) html+='<button class="home" onclick="renderBonusQuestion()">Prossima domanda</button>';
+  else html+='<p>Hai totalizzato <b>'+score+'</b> su <b>'+quiz.length+'</b>.</p><p>Ogni piccolo gesto accarezza la Terra.</p><button class="home" onclick="goHome()">🏠 Torna all’inizio</button>';
+  document.querySelector('.card').innerHTML=html;
+}
+function normalize(text){ return text.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,''); }
+function searchWaste(){
+  const input=document.getElementById('searchInput');
+  const box=document.getElementById('searchResults');
+  const term=normalize(input.value.trim());
+  if(term.length<2){ box.innerHTML=''; return; }
+  const found=items.filter(x=>normalize(x.n+' '+x.k).includes(term));
+  if(found.length===0){
+    box.innerHTML='<p>Nessun risultato nel database attuale.</p><p class="small">Prova con un sinonimo più semplice: ad esempio “giocattoli”, “telefono”, “shampoo”.</p>';
+    return;
+  }
+  box.innerHTML=found.slice(0,14).map(x=>'<div class="searchItem"><b>'+x.n+'</b><br>Va in: <b>'+labelFor(x.c)+'</b><br><span class="small">'+x.e+'</span></div>').join('');
+}
+</script>
+</body>
+</html>
