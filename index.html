@@ -3,13 +3,6 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta name="theme-color" content="#2e8b57">
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-title" content="Gaia Quiz">
-<meta name="apple-mobile-web-app-status-bar-style" content="default">
-<link rel="manifest" href="./manifest.webmanifest">
-<link rel="icon" type="image/png" sizes="192x192" href="./icon-192.png">
-<link rel="apple-touch-icon" href="./icon-192.png">
 <title>Un piccolo gesto che accarezza la Terra</title>
 <style>
 body{font-family:Arial,sans-serif;background:linear-gradient(#dff7df,#f7fff7);margin:0;padding:20px;text-align:center;color:#234}
@@ -29,7 +22,6 @@ button:disabled{opacity:.75;cursor:not-allowed}
 input{width:90%;max-width:440px;padding:12px;border-radius:10px;border:1px solid #bbb;font-size:1em}
 .searchItem{padding:10px;border-bottom:1px solid #ddd;text-align:left}
 .journeyBox{margin-top:16px;padding:18px;border-radius:18px;background:#f2fff2;box-shadow:inset 0 0 0 1px #cfe8cf}.journeyEmoji{font-size:3em;margin:5px}.journeyOptions{display:grid;grid-template-columns:1fr;gap:10px;margin-top:15px}.journeyBtn{background:#2e8b57;color:white}.journeyResult{margin-top:18px;padding:15px;border-radius:14px;font-size:1.05em;line-height:1.45}.journeyOk{background:#e7f7ec}.journeyNo{background:#fff0e6}.journeyNote{font-size:.95em;color:#456;margin-top:10px}
-.installHint{margin:16px auto 6px;padding:12px 14px;border-radius:16px;background:#eef9ef;border:1px solid #cfe8cf;color:#2b5d3b;font-size:.95em;line-height:1.35}.appIconPreview{width:62px;height:62px;border-radius:18px;box-shadow:0 4px 12px rgba(0,0,0,.18);vertical-align:middle;margin-right:8px}
 @media(max-width:600px){.buttons{grid-template-columns:1fr}h1{font-size:1.55em}.card{padding:18px}}
 </style>
 </head>
@@ -39,13 +31,13 @@ input{width:90%;max-width:440px;padding:12px;border-radius:10px;border:1px solid
 <h1>🌍 Un piccolo gesto che accarezza la Terra</h1>
 <p>Impara giocando dove mettere ogni rifiuto.</p>
 <p class="small">Ogni scelta corretta aiuta la Terra: meno errori, più riciclo, più cura.</p>
-<div class="installHint"><img class="appIconPreview" src="./icon-192.png" alt="Icona app">Puoi salvare questa app sulla schermata del telefono: apri il menu del browser e scegli <b>Aggiungi alla schermata Home</b>.</div>
 </div>
 <div id="modeSelect">
 <p><b>Scegli cosa fare:</b></p>
 <button class="modeBtn" onclick="showQuiz()">🎮 Inizia il quiz</button>
 <button class="modeBtn" onclick="showSearch()">🔎 Cerca un rifiuto</button>
 <button class="modeBtn" onclick="showJourney()">🚛 Il viaggio dei rifiuti</button>
+<button class="modeBtn" onclick="showInfo()">ℹ️ Informazioni</button>
 </div>
 <div id="levelSelect" style="display:none;">
 <p><b>Scegli il livello:</b></p>
@@ -68,6 +60,24 @@ input{width:90%;max-width:440px;padding:12px;border-radius:10px;border:1px solid
 <br>
 <button class="home" onclick="goHome()">🏠 Torna all’inizio</button>
 </div>
+
+<div id="infoArea" style="display:none;">
+<p><b>ℹ️ Informazioni</b></p>
+
+<p>Questa è una semplice app educativa per imparare, giocando, a differenziare correttamente i rifiuti.</p>
+
+<p class="small">
+Le indicazioni seguono le linee guida pubbliche di GAIA (“Il rifiuto: dove lo metto?”).<br>
+Questa è un’app educativa non ufficiale.
+</p>
+
+<p class="small">
+Ogni piccolo gesto quotidiano può contribuire a prendersi cura della Terra.
+</p>
+
+<button class="home" onclick="goHome()">🏠 Torna all’inizio</button>
+</div>
+
 <div id="quizArea" style="display:none;">
 <p id="score">Punteggio: 0</p>
 <h2 id="question"></h2>
@@ -97,6 +107,17 @@ function setHomeHeaderVisible(visible){
   const header=document.getElementById('homeHeader');
   if(header) header.style.display=visible?'block':'none';
 }
+
+function showInfo(){
+  setHomeHeaderVisible(false);
+  document.getElementById('modeSelect').style.display='none';
+  document.getElementById('levelSelect').style.display='none';
+  document.getElementById('searchArea').style.display='none';
+  document.getElementById('quizArea').style.display='none';
+  document.getElementById('journeyArea').style.display='none';
+  document.getElementById('infoArea').style.display='block';
+}
+
 function showJourney(){
   setHomeHeaderVisible(false);
   document.getElementById('modeSelect').style.display='none';
@@ -126,9 +147,8 @@ function checkJourney(isCorrect){
 function nextJourney(){
   journeyIndex++;
   if(journeyIndex>=journeyItems.length){
-    document.getElementById('journeyCard').innerHTML='<div class="journeyEmoji">🌍</div><h2 style="min-height:auto;">Viaggio completato!</h2><p>Hai seguito il percorso dei rifiuti più importanti.</p><p><b>La differenziata funziona meglio quando ogni gesto è fatto con attenzione.</b></p><div id="gestoBoxJourney"></div>';
+    document.getElementById('journeyCard').innerHTML='<div class="journeyEmoji">🌍</div><h2 style="min-height:auto;">Viaggio completato!</h2><p>Hai seguito il percorso dei rifiuti più importanti.</p><p><b>La differenziata funziona meglio quando ogni gesto è fatto con attenzione.</b></p>';
     document.getElementById('journeyNextBtn').style.display='none';
-    setTimeout(()=>mostraGestoFinale('gestoBoxJourney'),100);
   } else renderJourney();
 }
 
@@ -235,9 +255,8 @@ function checkBonus(i){
   let html='<h1>'+(ok?'🌱 Corretto!':'🙂 Quasi!')+'</h1><p>'+(ok?'✅ Risposta corretta!':'❌ '+b.e)+'</p>';
   window.bonusIndex++;
   if(window.bonusIndex<window.bonusSet.length) html+='<button class="home" onclick="renderBonusQuestion()">Prossima domanda</button>';
-  else html+='<p>Hai totalizzato <b>'+score+'</b> su <b>'+quiz.length+'</b>.</p><p>Ogni piccolo gesto accarezza la Terra.</p><div id="gestoBox"></div><button class="home" onclick="goHome()">🏠 Torna all’inizio</button>';
+  else html+='<p>Hai totalizzato <b>'+score+'</b> su <b>'+quiz.length+'</b>.</p><p>Ogni piccolo gesto accarezza la Terra.</p><button class="home" onclick="goHome()">🏠 Torna all’inizio</button>';
   document.querySelector('.card').innerHTML=html;
-  if(document.getElementById('gestoBox')) setTimeout(()=>mostraGestoFinale('gestoBox'),100);
 }
 function normalize(text){ return text.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,''); }
 function searchWaste(){
@@ -251,42 +270,6 @@ function searchWaste(){
     return;
   }
   box.innerHTML=found.slice(0,14).map(x=>'<div class="searchItem"><b>'+x.n+'</b><br>Va in: <b>'+labelFor(x.c)+'</b><br><span class="small">'+x.e+'</span></div>').join('');
-}
-
-function mostraGestoFinale(containerId){
-  const box = document.getElementById(containerId);
-  if(!box) return;
-  box.innerHTML = `
-    <div class="journeyBox" style="margin-top:18px;">
-      <p><b>🌍 Vuoi fare un piccolo gesto per la Terra?</b></p>
-      <p class="small">Scegli un impegno semplice da portare con te oggi.</p>
-      <button class="modeBtn" onclick="scegliGesto('plastica')">♻️ Attenzione alla plastica</button>
-      <button class="modeBtn" onclick="scegliGesto('cibo')">🌿 Ridurre gli sprechi di cibo</button>
-      <button class="modeBtn" onclick="scegliGesto('speciali')">🔋 Smaltire bene i rifiuti speciali</button>
-      <div id="gestoFinale" class="result"></div>
-    </div>
-  `;
-}
-function scegliGesto(tipo){
-  const box = document.getElementById('gestoFinale');
-  if(!box) return;
-  const messaggi = {
-    plastica: "Ogni plastica differenziata correttamente è una risorsa che può tornare a vivere.",
-    cibo: "Ridurre lo spreco di cibo è uno dei gesti più concreti per accarezzare la Terra.",
-    speciali: "I rifiuti speciali, se portati nei luoghi giusti, evitano danni e recuperano valore."
-  };
-  box.innerHTML = "🌱 " + messaggi[tipo];
-}
-
-</script>
-
-<script>
-if ('serviceWorker' in navigator) {
-  window.addEventListener('load', function(){
-    navigator.serviceWorker.register('./sw.js').catch(function(err){
-      console.log('Service worker non registrato:', err);
-    });
-  });
 }
 </script>
 </body>
