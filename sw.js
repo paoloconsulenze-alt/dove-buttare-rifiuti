@@ -1,10 +1,11 @@
-const CACHE_NAME = 'gaia-v1-2';
+const CACHE_NAME = 'gaia-app-v1-icona-20260430';
 const APP_SHELL = [
   './',
   './index.html',
   './manifest.webmanifest',
   './icon-192.png',
   './icon-512.png',
+  './maskable-icon-512.png',
   './social-preview.png'
 ];
 
@@ -25,37 +26,13 @@ self.addEventListener('activate', event => {
 
 self.addEventListener('fetch', event => {
   if (event.request.method !== 'GET') return;
-
-  const requestUrl = new URL(event.request.url);
-  const isSameOrigin = requestUrl.origin === self.location.origin;
-  const isHtmlRequest = event.request.mode === 'navigate' ||
-    (event.request.headers.get('accept') || '').includes('text/html');
-
-  // Per la pagina principale: prova prima la rete, così gli aggiornamenti arrivano subito.
-  if (isSameOrigin && isHtmlRequest) {
-    event.respondWith(
-      fetch(event.request)
-        .then(response => {
-          const copy = response.clone();
-          caches.open(CACHE_NAME).then(cache => cache.put(event.request, copy));
-          return response;
-        })
-        .catch(() => caches.match(event.request).then(cached => cached || caches.match('./index.html')))
-    );
-    return;
-  }
-
-  // Per icone e file statici: usa la cache, ma aggiorna in sottofondo quando possibile.
-  if (isSameOrigin) {
-    event.respondWith(
-      caches.match(event.request).then(cached => {
-        const networkFetch = fetch(event.request).then(response => {
-          const copy = response.clone();
-          caches.open(CACHE_NAME).then(cache => cache.put(event.request, copy));
-          return response;
-        }).catch(() => cached);
-        return cached || networkFetch;
+  event.respondWith(
+    fetch(event.request)
+      .then(response => {
+        const copy = response.clone();
+        caches.open(CACHE_NAME).then(cache => cache.put(event.request, copy));
+        return response;
       })
-    );
-  }
+      .catch(() => caches.match(event.request).then(cached => cached || caches.match('./index.html')))
+  );
 });
