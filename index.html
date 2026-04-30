@@ -3,7 +3,11 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Un piccolo gesto che accarezza la Terra</title>
+<title>Dove buttare rifiuti – Guida raccolta differenziata</title>
+<meta name="description" content="App educativa non ufficiale per imparare, giocando, dove buttare i rifiuti e come fare la raccolta differenziata.">
+<link rel="manifest" href="manifest.webmanifest">
+<meta name="theme-color" content="#2e8b57">
+<link rel="apple-touch-icon" href="icon-192.png">
 <style>
 body{font-family:Arial,sans-serif;background:linear-gradient(#dff7df,#f7fff7);margin:0;padding:20px;text-align:center;color:#234}
 .card{max-width:780px;margin:auto;background:#fff;border-radius:20px;padding:25px;box-shadow:0 4px 15px rgba(0,0,0,.15)}
@@ -28,9 +32,12 @@ input{width:90%;max-width:440px;padding:12px;border-radius:10px;border:1px solid
 <body>
 <div class="card" id="app">
 <div id="homeHeader">
-<h1>🌍 Un piccolo gesto che accarezza la Terra</h1>
-<p>Impara giocando dove mettere ogni rifiuto.</p>
+<h1>♻️ Dove buttare rifiuti</h1>
+<p class="small">Un piccolo gesto che accarezza la Terra</p>
+<p>Impara giocando come differenziare correttamente i rifiuti.</p>
 <p class="small">Ogni scelta corretta aiuta la Terra: meno errori, più riciclo, più cura.</p>
+<p class="small">Le indicazioni seguono le linee guida pubbliche di GAIA (“Il rifiuto: dove lo metto?”).<br>Questa è un’app educativa non ufficiale.</p>
+<p class="small">📱 Puoi salvarla sulla schermata Home del telefono per averla sempre a portata di mano.</p>
 </div>
 <div id="modeSelect">
 <p><b>Scegli cosa fare:</b></p>
@@ -64,7 +71,7 @@ input{width:90%;max-width:440px;padding:12px;border-radius:10px;border:1px solid
 <div id="infoArea" style="display:none;">
 <p><b>ℹ️ Informazioni</b></p>
 
-<p>Questa è una semplice app educativa per imparare, giocando, a differenziare correttamente i rifiuti.</p>
+<p>Questa è una semplice app educativa per imparare, giocando, dove buttare i rifiuti e come differenziarli correttamente.</p>
 
 <p class="small">
 Le indicazioni seguono le linee guida pubbliche di GAIA (“Il rifiuto: dove lo metto?”).<br>
@@ -272,5 +279,16 @@ function searchWaste(){
   box.innerHTML=found.slice(0,14).map(x=>'<div class="searchItem"><b>'+x.n+'</b><br>Va in: <b>'+labelFor(x.c)+'</b><br><span class="small">'+x.e+'</span></div>').join('');
 }
 </script>
+
+<script>
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', function(){
+    navigator.serviceWorker.register('./sw.js').catch(function(err){
+      console.log('Service worker non registrato:', err);
+    });
+  });
+}
+</script>
+
 </body>
 </html>

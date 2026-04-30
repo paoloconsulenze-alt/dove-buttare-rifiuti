@@ -1,31 +1,25 @@
 {
-  "name": "Un piccolo gesto che accarezza la Terra",
-  "short_name": "Gaia Quiz",
-  "description": "Quiz e guida pratica per la raccolta differenziata nel territorio GAIA.",
+  "name": "Dove buttare rifiuti",
+  "short_name": "Rifiuti",
+  "description": "App educativa per imparare dove buttare i rifiuti e fare meglio la raccolta differenziata.",
   "start_url": "./index.html",
   "scope": "./",
   "display": "standalone",
-  "orientation": "portrait",
   "background_color": "#dff7df",
   "theme_color": "#2e8b57",
+  "orientation": "portrait",
   "icons": [
     {
-      "src": "./icon-192.png",
+      "src": "icon-192.png",
       "sizes": "192x192",
       "type": "image/png",
-      "purpose": "any"
+      "purpose": "any maskable"
     },
     {
-      "src": "./icon-512.png",
+      "src": "icon-512.png",
       "sizes": "512x512",
       "type": "image/png",
-      "purpose": "any"
-    },
-    {
-      "src": "./maskable-icon-512.png",
-      "sizes": "512x512",
-      "type": "image/png",
-      "purpose": "maskable"
+      "purpose": "any maskable"
     }
   ]
 }
